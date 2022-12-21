@@ -94,7 +94,7 @@ class CambrianDecksExtension {
   
   loadDeck(args) {
     // const deckHost = "http://localhost:3030/scratch"
-    const deckHost = "https://cambria-gg.herokuapp.com/scratch"
+    const deckHost = "https://cambrian-gg.herokuapp.com/scratch"
     try {
       const projectId = Cast.toNumber(args.PROJECT_ID)
       const deckListName = Cast.toString(args.LIST_NAME)
