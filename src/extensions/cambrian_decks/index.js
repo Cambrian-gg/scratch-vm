@@ -21,14 +21,10 @@ class CambrianDecksExtension {
           "blockType": BlockType.COMMAND,
           text: formatMessage({
               id: 'cambrian.decks.loadDeck',
-              default: 'load deck from project id [PROJECT_ID] into list [LIST_NAME] and shuffle [SHUFFLE]',
-              description: 'loads the first deck from the project with the given id'
+              default: 'load deck into list [LIST_NAME] and shuffle [SHUFFLE]',
+              description: 'loads the first deck from the project'
           }), 
           "arguments": {
-            PROJECT_ID: {
-              type: ArgumentType.NUMBER,
-              defaultValue: 0,
-            },
             LIST_NAME: {
               type: ArgumentType.STRING,
               defaultValue: 'All Cards',
@@ -93,10 +89,9 @@ class CambrianDecksExtension {
   };
   
   loadDeck(args) {
-    // const deckHost = "http://localhost:3030/scratch"
-    const deckHost = "https://cambrian-gg.herokuapp.com/scratch"
+    const deckHost = this.runtime.cambrian.decksHost;
     try {
-      const projectId = Cast.toNumber(args.PROJECT_ID)
+      const projectId = Cast.toNumber(this.runtime.cambrian.projectId)
       const deckListName = Cast.toString(args.LIST_NAME)
       const shuffle = Cast.toString(args.SHUFFLE) == 'True'
       const categoriesListName = Cast.toString("Categories");
