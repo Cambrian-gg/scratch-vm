@@ -154,7 +154,9 @@ class CambrianDecksExtension {
   }
 
   getCardName(args) {
-    return JSON.parse(Cast.toString(args.CARD))["name"]
+    // FIXME: Extract this logic for card to costume name in a util
+    const card = JSON.parse(Cast.toString(args.CARD))
+    return `card-${card["id"]}-${card["name"]}`
   }
 
   shuffleArray(array) {
