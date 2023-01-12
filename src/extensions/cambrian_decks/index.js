@@ -40,7 +40,7 @@ class CambrianDecksExtension {
           "blockType": BlockType.REPORTER,
           text: formatMessage({
               id: 'cambrian.decks.cardCategories',
-              default: 'categories for [CARD]',
+              default: 'card to text [CARD]',
               description: 'get a list of card categories for a card'
           }), 
           "arguments": {
@@ -54,7 +54,7 @@ class CambrianDecksExtension {
           "blockType": BlockType.REPORTER,
           text: formatMessage({
               id: 'cambrian.decks.compareCardsOnCategories',
-              default: 'compare [CARD1] and [CARD2] on [CATEGORY_ID]',
+              default: 'compare [CARD1] and [CARD2] on [CATEGORY_POSITION]',
               description: 'compare the cards on the given category. Returns -1, 0, 1'
           }), 
           "arguments": {
@@ -64,7 +64,7 @@ class CambrianDecksExtension {
             CARD2: {
               type: ArgumentType.STRING,
             },
-            CATEGORY_ID: {
+            CATEGORY_POSITION: {
               type: ArgumentType.STRING,
             },
           },
@@ -81,6 +81,23 @@ class CambrianDecksExtension {
             CARD: {
               type: ArgumentType.STRING,
             },
+          },
+        },
+        {
+          "opcode": 'getCategoryValue',
+          "blockType": BlockType.REPORTER,
+          text: formatMessage({
+              id: 'cambrian.decks.categoryValue',
+              default: 'category value [CARD] [CATEGORY_POSITION]',
+              description: 'get the value for the category in the given position'
+          }),
+          "arguments": {
+            CARD: {
+              type: ArgumentType.STRING,
+            },
+            CATEGORY_POSITION: {
+              type: ArgumentType.STRING
+            }
           },
         },
          
@@ -102,7 +119,6 @@ class CambrianDecksExtension {
           const deckList = this.runtime.targets[0].lookupOrCreateList(
             `cambrian.decks.${deckListName}`, deckListName);
           const deck = json[0]
-          const categoryValues = json[0].cards[0].categoryValues.map(v=> `${v.categoryId}:${v.value}`).join(",")
           const cards = deck.cards;
           if(shuffle) {
             this.shuffleArray(deck.cards)
@@ -136,20 +152,21 @@ class CambrianDecksExtension {
 
   getCardCategories(args) {
     const card = JSON.parse(Cast.toString(args.CARD))
-    return card.categoryValues.map(cv=> `${cv.categoryId}-${cv.categoryName}:${cv.value}`).join("\n")
+    const categories = this.getOrderedCategoryValues(card).map((cv, index)=> `${index+1}-${cv.categoryName}:${cv.value}`).join("\n")
+    return ["",card.name,categories,""].join("\n")
   }
 
   compareCardsOnCategory(args) {
     const card1 = JSON.parse(Cast.toString(args.CARD1))
     const card2 = JSON.parse(Cast.toString(args.CARD2))
-    const categoryId = Cast.toString(args.CATEGORY_ID)
-
-    const categoryValue1 = card1.categoryValues.filter(cv=> cv.categoryId == categoryId)[0]
+    const categoryPosition = Cast.toString(args.CATEGORY_POSITION)
+    const categoryIndex = categoryPosition - 1
+    const categoryValue1 = this.getOrderedCategoryValues(card1)[categoryIndex]
     if(categoryValue1 == null) {
-      console.error(`There is no category with id: ${categoryId}`)
+      console.error(`There is no category with position: ${categoryPosition}`)
     }
     const value1 = categoryValue1.value
-    const value2 = card2.categoryValues.filter(cv=> cv.categoryId == categoryId)[0].value
+    const value2 = this.getOrderedCategoryValues(card2)[categoryIndex].value
     return parseInt(value1,10)-parseInt(value2, 10)
   }
 
@@ -157,6 +174,22 @@ class CambrianDecksExtension {
     // FIXME: Extract this logic for card to costume name in a util
     const card = JSON.parse(Cast.toString(args.CARD))
     return `card-${card["id"]}-${card["name"]}`
+  }
+
+  getCategoryValue(args) {
+    const card = JSON.parse(Cast.toString(args.CARD))
+    const categoryPosition = JSON.parse(Cast.toString(args.CATEGORY_POSITION))
+
+    return this.getOrderedCategoryValues(card)[categoryPosition-1].value
+  }
+
+  /**
+   * Make sure that we always have the categoryValues sorted
+   * This might not be needed in the long run but adding it here as a
+   * guard, until we have proper specs on this
+   */
+  getOrderedCategoryValues(card) {
+    return card.categoryValues.sort((card1, card2)=> Cast.toNumber(card1.categoryId) - Cast.toNumber(card2.categoryId))
   }
 
   shuffleArray(array) {
