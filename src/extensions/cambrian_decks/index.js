@@ -113,7 +113,7 @@ class CambrianDecksExtension {
       const shuffle = Cast.toString(args.SHUFFLE) == 'True'
       const categoriesListName = Cast.toString("Categories");
       const promise = new Promise((resolve, reject)=> {
-        fetch(`${deckHost}/decks?project_id=${projectId}`).then((response)=> {
+        fetch(`${deckHost}/decks?game_id=${projectId}`).then((response)=> {
           return response.json()
         }).then((json)=> {
           const deckList = this.runtime.targets[0].lookupOrCreateList(
