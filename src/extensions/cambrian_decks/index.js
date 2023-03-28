@@ -167,7 +167,7 @@ class CambrianDecksExtension {
     }
     const value1 = categoryValue1.value
     const value2 = this.getOrderedCategoryValues(card2)[categoryIndex].value
-    return parseInt(value1,10)-parseInt(value2, 10)
+    return parseFloat(value1)-parseFloat(value2)
   }
 
   getCardName(args) {
